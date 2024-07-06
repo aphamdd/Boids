@@ -7,6 +7,7 @@ public:
   Boid(const int, const int);
   sf::Vector2f getVel() const { return sf::Vector2f(m_vx, m_vy); }
   sf::Vector2f getPos() const { return m_position; }
+  void resize(const float radius) { m_boid.setRadius(radius); }
 
 public:
   void setvx(const float x) { m_vx = x; }

@@ -6,10 +6,13 @@
 #include <random>
 #include <SFML/Window.hpp>
 using namespace std;
+// Boids Algorithm
 // https://people.ece.cornell.edu/land/courses/ece4760/labs/s2021/Boids/Boids.html#Boids!
+// imgui guide
+// https://www.youtube.com/watch?v=2YS5WJTeKpI
 
 const int FPS = 3000;
-const int NUM_BOIDS = 500;
+int NUM_BOIDS = 500;
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Boid Simluator", sf::Style::Default);
@@ -18,13 +21,15 @@ int main() {
 
   sf::Clock deltaClock;
   bool bgExists = false;
+  float radius = 5;
+  int prevBoids = NUM_BOIDS;
 
   sf::Texture bgTexture;
   sf::Sprite bg;
   sf::Vector2u textureSize;
   sf::Vector2u windowSize;
 
-  if (!bgTexture.loadFromFile("./Textures/background.png"))
+  if (!bgTexture.loadFromFile("./Textures/forest.jpg"))
     return -1;
   else {
     textureSize = bgTexture.getSize();
@@ -53,10 +58,6 @@ int main() {
   float avoidfactor = 0.5;
   float matchingfactor = 0.5;
 
-  // initialize particles
-  ParticleSystem particles(1000);
-  // create a clock to track the elapsed time
-  sf::Clock clock;
   sf::Clock dtClock;
 
   while (window.isOpen()) {
@@ -70,30 +71,40 @@ int main() {
     }
 
     ImGui::SFML::Update(window, deltaClock.restart());
-    ImGui::Begin("Window");
-    ImGui::Text("Window text");
+    ImGui::Begin("Settings");
+    ImGui::Text("Sliders");
+    ImGui::SliderInt("Boids", &NUM_BOIDS, 1, 700);
     ImGui::SliderFloat("Visual Range", &visualRange, 0.f, 1000.f);
     ImGui::SliderFloat("Protected Range", &protectedRange, 0.f, 300.f);
     ImGui::SliderFloat("Centering Factor", &centeringfactor, 0.f, 1.f);
     ImGui::SliderFloat("Avoid Factor", &avoidfactor, 0.f, 5.f);
     ImGui::SliderFloat("Matching Factor", &matchingfactor, 0.f, 5.f);
-    ImGui::Checkbox("Toby", &bgExists);
+    ImGui::SliderFloat("Size", &radius, 1.f, 5.f);
+    ImGui::Text("Boxes");
+    ImGui::Checkbox("Background", &bgExists);
     ImGui::End();
 
-    /* particles
-    sf::Vector2i mouse = sf::Mouse::getPosition(window);
-    particles.setEmitter(window.mapPixelToCoords(mouse));
-    sf::Time elapsed = clock.restart();
-    particles.update(elapsed);
-    */
+    if (prevBoids != NUM_BOIDS) {
+      if (prevBoids > NUM_BOIDS) {
+        for (int i = 0; i < (prevBoids - NUM_BOIDS); ++i) {
+          boids.pop_back();
+        }
+      }
+      else if (prevBoids < NUM_BOIDS) {
+        for (int i = 0; i < (NUM_BOIDS - prevBoids); ++i) {
+          boids.push_back(Boid(d1(rng), d2(rng)));
+        }
+      }
+      prevBoids = NUM_BOIDS;
+    }
 
     // update boids
-    for (int i = 0; i < NUM_BOIDS; ++i) {
+    for (int i = 0; i < boids.size(); ++i) {
       float xavg = 0, yavg = 0, xvel = 0, yvel = 0, neighbor = 0, closedx = 0, closedy = 0;
       float x = boids[i].getPos().x, y = boids[i].getPos().y;
       float vx = boids[i].getVel().x, vy = boids[i].getVel().y;
 
-      for (int j = 0; j < NUM_BOIDS; ++j) {
+      for (int j = 0; j < boids.size(); ++j) {
         float dx = x - boids[j].getPos().x, dy = y - boids[j].getPos().y;
         
         // boids are within the visual range
@@ -134,7 +145,8 @@ int main() {
       vy = boids[i].getVel().y;
       boids[i].setvx(vx + (closedx * avoidfactor));
       boids[i].setvy(vy + (closedy * avoidfactor));
-
+      
+      boids[i].resize(radius);
       boidSys.update(boids[i], dt);
     }
 
@@ -142,8 +154,7 @@ int main() {
     window.clear(sf::Color::Black);
     if (bgExists)
       window.draw(bg);
-    window.draw(particles);
-    for (int i = 0; i < NUM_BOIDS; ++i) {
+    for (int i = 0; i < boids.size(); ++i) {
       window.draw(boids[i]);
     }
     ImGui::SFML::Render(window);
