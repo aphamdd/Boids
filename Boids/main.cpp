@@ -17,6 +17,7 @@ int main() {
   window.setFramerateLimit(FPS);
 
   sf::Clock deltaClock;
+  bool bgExists = false;
 
   sf::Texture bgTexture;
   sf::Sprite bg;
@@ -71,6 +72,12 @@ int main() {
     ImGui::SFML::Update(window, deltaClock.restart());
     ImGui::Begin("Window");
     ImGui::Text("Window text");
+    ImGui::SliderFloat("Visual Range", &visualRange, 0.f, 1000.f);
+    ImGui::SliderFloat("Protected Range", &protectedRange, 0.f, 300.f);
+    ImGui::SliderFloat("Centering Factor", &centeringfactor, 0.f, 1.f);
+    ImGui::SliderFloat("Avoid Factor", &avoidfactor, 0.f, 5.f);
+    ImGui::SliderFloat("Matching Factor", &matchingfactor, 0.f, 5.f);
+    ImGui::Checkbox("Toby", &bgExists);
     ImGui::End();
 
     /* particles
@@ -133,7 +140,8 @@ int main() {
 
     // rendering
     window.clear(sf::Color::Black);
-    window.draw(bg);
+    if (bgExists)
+      window.draw(bg);
     window.draw(particles);
     for (int i = 0; i < NUM_BOIDS; ++i) {
       window.draw(boids[i]);
