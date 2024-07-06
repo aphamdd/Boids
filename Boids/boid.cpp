@@ -5,7 +5,7 @@
 using namespace std;
 
 Boid::Boid(const int r1, const int r2) :
-  m_boid(1.f, 5),
+  m_boid(5.f, 5),
   m_vx(r1), m_vy(r2),
   m_position(0, 0) {
 

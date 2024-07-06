@@ -1,5 +1,7 @@
 #include "boidsys.h"
 #include "particles.h"
+#include "imgui.h"
+#include "imgui-SFML.h"
 #include <iostream>
 #include <random>
 #include <SFML/Window.hpp>
